@@ -27,8 +27,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 class ClusterMarker implements Marker {
 
-	private long clusterId;
-
 	private int lastCount = -1;
 
 	private GridClusteringStrategy strategy;
@@ -39,14 +37,6 @@ class ClusterMarker implements Marker {
 
 	public ClusterMarker(GridClusteringStrategy strategy) {
 		this.strategy = strategy;
-	}
-
-	long getClusterId() {
-		return clusterId;
-	}
-
-	void setClusterId(long clusterId) {
-		this.clusterId = clusterId;
 	}
 
 	com.google.android.gms.maps.model.Marker getVirtual() {
@@ -118,10 +108,6 @@ class ClusterMarker implements Marker {
 		}
 	}
 
-	void reset() {
-		markers.clear();
-	}
-
 	List<DelegatingMarker> getMarkersInternal() {
 		return new ArrayList<DelegatingMarker>(markers);
 	}
@@ -134,6 +120,14 @@ class ClusterMarker implements Marker {
 	@Override
 	public void animatePosition(LatLng target, AnimationSettings settings) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getClusterGroup() {
+		if (markers.size() > 0) {
+			return markers.get(0).getClusterGroup();
+		}
+		throw new IllegalStateException();
 	}
 
 	@Override
@@ -215,6 +209,11 @@ class ClusterMarker implements Marker {
 
 	@Override
 	public void setAnchor(float anchorU, float anchorV) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setClusterGroup(int clusterGroup) {
 		throw new UnsupportedOperationException();
 	}
 
