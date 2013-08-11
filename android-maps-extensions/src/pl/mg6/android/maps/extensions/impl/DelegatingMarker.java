@@ -41,6 +41,7 @@ class DelegatingMarker implements Marker {
 
 		this.position = real.getPosition();
 		this.visible = real.isVisible();
+        manager.onVisibilityChange(this, this.visible);
 	}
 
 	@Override

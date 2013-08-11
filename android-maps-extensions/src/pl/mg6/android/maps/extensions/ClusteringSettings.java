@@ -29,6 +29,8 @@ public class ClusteringSettings {
 
     private boolean useLeaderPostion;
 
+    private ClusteringChangeListener listener;
+
     public ClusteringSettings addMarkersDynamically(boolean addMarkersDynamically) {
 		this.addMarkersDynamically = addMarkersDynamically;
 		return this;
@@ -114,4 +116,18 @@ public class ClusteringSettings {
 
 		MarkerOptions getIconData(int markersCount);
 	}
+
+    public void setClusteringChangeListener(ClusteringChangeListener listener) {
+        this.listener = listener;
+    }
+
+    public ClusteringChangeListener getClusteringListener() {
+        return listener;
+    }
+
+    public interface ClusteringChangeListener {
+        void onMarkerVisibilityChange(Marker marker, boolean visibility);
+        void onRefreshDone();
+        void onRefreshBegin();
+    }
 }

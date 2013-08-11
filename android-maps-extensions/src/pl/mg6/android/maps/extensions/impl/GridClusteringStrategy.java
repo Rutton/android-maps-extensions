@@ -35,7 +35,10 @@ import com.google.android.gms.maps.model.VisibleRegion;
 class GridClusteringStrategy implements ClusteringStrategy {
 
 	private static final boolean DEBUG_GRID = false;
-	private DebugHelper debugHelper;
+
+    private final ClusteringSettings.ClusteringChangeListener clusteringListener;
+
+    private DebugHelper debugHelper;
 
 	private final MarkerOptions markerOptions = new MarkerOptions();
 
@@ -58,6 +61,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		this.addMarkersDynamically = settings.isAddMarkersDynamically();
 		this.baseClusterSize = settings.getClusterSize();
         this.useLeaderPosition = settings.isUseLeaderPosition();
+        this.clusteringListener = settings.getClusteringListener();
 		this.map = map;
 		this.markers = new HashMap<DelegatingMarker, ClusterMarker>();
 		for (DelegatingMarker m : markers) {

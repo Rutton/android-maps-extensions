@@ -45,24 +45,13 @@ class MarkerManager implements OnMarkerCreateListener {
 	private ClusteringStrategy clusteringStrategy = new NoClusteringStrategy(new ArrayList<DelegatingMarker>());
 
 	private final MarkerAnimator markerAnimator = new MarkerAnimator();
-    private MarkerVisibilityChangeListener listener;
-
-
-    public interface MarkerVisibilityChangeListener {
-        void onMarkerVisibilityChange(DelegatingMarker marker, boolean visibility);
-        void onRefreshDone();
-        void onRefreshBegin();
-    }
+    private ClusteringSettings.ClusteringChangeListener listener;
 
 	public MarkerManager(IGoogleMap factory) {
 		this.factory = factory;
 		this.markers = new HashMap<LazyMarker, DelegatingMarker>();
 		this.createdMarkers = new HashMap<com.google.android.gms.maps.model.Marker, LazyMarker>();
 	}
-
-    public void setMarkerVisibilityChangeListener(MarkerVisibilityChangeListener listener) {
-        this.listener = listener;
-    }
 
 	public Marker addMarker(MarkerOptions markerOptions) {
 		boolean visible = markerOptions.isVisible();
@@ -170,6 +159,7 @@ class MarkerManager implements OnMarkerCreateListener {
 			ArrayList<DelegatingMarker> list = new ArrayList<DelegatingMarker>(markers.values());
 			if (clusteringSettings.isEnabled()) {
 				clusteringStrategy = new GridClusteringStrategy(clusteringSettings, factory, list, new ClusterRefresher(this));
+                listener = clusteringSettings.getClusteringListener();
 			} else if (clusteringSettings.isAddMarkersDynamically()) {
 				clusteringStrategy = new DynamicNoClusteringStrategy(factory, list);
 			} else {

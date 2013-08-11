@@ -44,4 +44,5 @@ interface ClusteringStrategy {
 	List<Marker> getDisplayedMarkers();
 
 	float getMinZoomLevelNotClustered(Marker marker);
+
 }
