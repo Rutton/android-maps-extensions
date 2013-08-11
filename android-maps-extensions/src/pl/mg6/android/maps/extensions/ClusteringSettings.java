@@ -27,7 +27,9 @@ public class ClusteringSettings {
 
 	private IconDataProvider iconDataProvider = null;
 
-	public ClusteringSettings addMarkersDynamically(boolean addMarkersDynamically) {
+    private boolean useLeaderPostion;
+
+    public ClusteringSettings addMarkersDynamically(boolean addMarkersDynamically) {
 		this.addMarkersDynamically = addMarkersDynamically;
 		return this;
 	}
@@ -47,6 +49,11 @@ public class ClusteringSettings {
 		this.enabled = enabled;
 		return this;
 	}
+
+    public ClusteringSettings useLeaderPosition(boolean useLeaderPosition) {
+        this.useLeaderPostion = useLeaderPosition;
+        return this;
+    }
 
 	public double getClusterSize() {
 		return clusterSize;
@@ -68,6 +75,10 @@ public class ClusteringSettings {
 	public boolean isEnabled() {
 		return enabled;
 	}
+
+    public boolean isUseLeaderPosition() {
+        return useLeaderPostion;
+    }
 
 	@Override
 	public boolean equals(Object o) {

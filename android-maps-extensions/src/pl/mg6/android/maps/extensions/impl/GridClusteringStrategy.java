@@ -41,6 +41,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 
 	private boolean addMarkersDynamically;
 	private double baseClusterSize;
+    private boolean useLeaderPosition;
 	private IGoogleMap map;
 	private Map<DelegatingMarker, ClusterMarker> markers;
 	private double clusterSize;
@@ -56,6 +57,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		this.iconDataProvider = settings.getIconDataProvider();
 		this.addMarkersDynamically = settings.isAddMarkersDynamically();
 		this.baseClusterSize = settings.getClusterSize();
+        this.useLeaderPosition = settings.isUseLeaderPosition();
 		this.map = map;
 		this.markers = new HashMap<DelegatingMarker, ClusterMarker>();
 		for (DelegatingMarker m : markers) {
@@ -312,6 +314,9 @@ class GridClusteringStrategy implements ClusteringStrategy {
 					cluster = newClusters.get(clusterIds[j]);
 					if (cluster == null) {
 						cluster = new ClusterMarker(this);
+                        if (useLeaderPosition) {
+                            cluster.setLeadingPosition(0);
+                        }
 						newClusters.put(clusterIds[j], cluster);
 						if (!addMarkersDynamically || isPositionInVisibleClusters(ms.get(j).getPosition())) {
 							refresh(cluster);

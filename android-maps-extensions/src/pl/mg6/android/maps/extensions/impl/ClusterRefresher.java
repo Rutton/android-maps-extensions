@@ -24,6 +24,7 @@ import android.os.Message;
 
 class ClusterRefresher {
 
+    private MarkerManager manager;
 	private Set<ClusterMarker> refreshQueue = new HashSet<ClusterMarker>();
 	private boolean refreshPending;
 	private Handler refresher = new Handler(new Callback() {
@@ -32,6 +33,10 @@ class ClusterRefresher {
 			return true;
 		}
 	});
+
+    public ClusterRefresher(MarkerManager manager) {
+        this.manager = manager;
+    }
 
 	void refresh(ClusterMarker cluster) {
 		refreshQueue.add(cluster);
@@ -45,9 +50,11 @@ class ClusterRefresher {
 		refreshQueue.clear();
 		refreshPending = false;
 		refresher.removeMessages(0);
+        manager.onRefreshDone();
 	}
 
 	void refreshAll() {
+        manager.onRefreshBegin();
 		for (ClusterMarker cluster : refreshQueue) {
 			cluster.refresh();
 		}

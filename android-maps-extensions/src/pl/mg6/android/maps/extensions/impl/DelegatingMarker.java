@@ -211,7 +211,11 @@ class DelegatingMarker implements Marker {
 	}
 
 	void changeVisible(boolean visible) {
-		real.setVisible(this.visible && visible);
+        boolean newVisible = this.visible && visible;
+        if (this.visible != newVisible) {
+            real.setVisible(newVisible);
+            manager.onVisibilityChange(this, newVisible);
+        }
 	}
 
 	void clearCachedPosition() {

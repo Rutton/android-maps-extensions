@@ -35,7 +35,9 @@ class ClusterMarker implements Marker {
 
 	private List<DelegatingMarker> markers = new ArrayList<DelegatingMarker>();
 
-	public ClusterMarker(GridClusteringStrategy strategy) {
+    private int leadingIndex;
+
+    public ClusterMarker(GridClusteringStrategy strategy) {
 		this.strategy = strategy;
 	}
 
@@ -59,12 +61,7 @@ class ClusterMarker implements Marker {
 			removeVirtual();
 			markers.get(0).changeVisible(true);
 		} else {
-			LatLngBounds.Builder builder = LatLngBounds.builder();
-			for (DelegatingMarker m : markers) {
-				builder.include(m.getPosition());
-				m.changeVisible(false);
-			}
-			LatLng position = calculateCenter(builder.build());
+            LatLng position = calcCenter(true);
 			if (virtual == null || lastCount != count) {
 				removeVirtual();
 				lastCount = count;
@@ -74,6 +71,22 @@ class ClusterMarker implements Marker {
 			}
 		}
 	}
+
+    private LatLng calcCenter(boolean changeVisibility) {
+        LatLngBounds.Builder builder = LatLngBounds.builder();
+        for (DelegatingMarker m : markers) {
+            builder.include(m.getPosition());
+            if (changeVisibility) {
+                m.changeVisible(false);
+            }
+        }
+        DelegatingMarker leadingMarker = getLeadingMarker();
+        if (leadingMarker != null) {
+            return leadingMarker.getPosition();
+        }
+
+        return calculateCenter(builder.build());
+    }
 
 	Marker getDisplayedMarker() {
 		int count = markers.size();
@@ -151,12 +164,8 @@ class ClusterMarker implements Marker {
 		if (virtual != null) {
 			return virtual.getPosition();
 		}
-		LatLngBounds.Builder builder = LatLngBounds.builder();
-		for (DelegatingMarker m : markers) {
-			builder.include(m.getPosition());
-		}
-		LatLng position = calculateCenter(builder.build());
-		return position;
+
+        return calcCenter(false);
 	}
 
 	@Override
@@ -261,6 +270,18 @@ class ClusterMarker implements Marker {
 			virtual.showInfoWindow();
 		}
 	}
+
+    DelegatingMarker getLeadingMarker() {
+        if (leadingIndex < 0 || leadingIndex > markers.size() - 1) {
+            return null;
+        }
+
+        return markers.get(leadingIndex);
+    }
+
+    void setLeadingPosition(int index) {
+        this.leadingIndex = index;
+    }
 
 	void setVirtualPosition(LatLng position) {
 		int count = markers.size();
