@@ -35,9 +35,14 @@ class DelegatingMarker implements Marker {
 	private LatLng position;
 	private boolean visible;
 
-	DelegatingMarker(LazyMarker real, MarkerManager manager) {
+    DelegatingMarker(LazyMarker real, MarkerManager manager) {
+        this(real, manager, null);
+    }
+
+	DelegatingMarker(LazyMarker real, MarkerManager manager, Object data) {
 		this.real = real;
 		this.manager = manager;
+        this.data = data;
 
 		this.position = real.getPosition();
 		this.visible = real.isVisible();
