@@ -48,6 +48,8 @@ public interface GoogleMap {
 
 	Marker addMarker(MarkerOptions markerOptions);
 
+    Marker addMarker(MarkerOptions markerOptions, Object data);
+
 	Polygon addPolygon(PolygonOptions polygonOptions);
 
 	Polyline addPolyline(PolylineOptions polylineOptions);
