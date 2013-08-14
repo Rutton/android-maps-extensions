@@ -53,12 +53,16 @@ class MarkerManager implements OnMarkerCreateListener {
 		this.createdMarkers = new HashMap<com.google.android.gms.maps.model.Marker, LazyMarker>();
 	}
 
-	public Marker addMarker(MarkerOptions markerOptions) {
+    public Marker addMarker(MarkerOptions markerOptions) {
+        return this.addMarker(markerOptions, null);
+    }
+
+	public Marker addMarker(MarkerOptions markerOptions, Object data) {
 		boolean visible = markerOptions.isVisible();
 		markerOptions.visible(false);
 		LazyMarker realMarker = new LazyMarker(factory.getMap(), markerOptions, this);
 		markerOptions.visible(visible);
-		DelegatingMarker marker = new DelegatingMarker(realMarker, this);
+		DelegatingMarker marker = new DelegatingMarker(realMarker, this, data);
 		markers.put(realMarker, marker);
 		clusteringStrategy.onAdd(marker);
 		marker.setVisible(visible);
@@ -131,7 +135,7 @@ class MarkerManager implements OnMarkerCreateListener {
 		clusteringStrategy.onVisibilityChangeRequest(marker, visible);
 	}
 
-    public void onVisibilityChange(DelegatingMarker marker, boolean visible) {
+    public void onVisibilityChange(Marker marker, boolean visible) {
         if(listener != null) {
             listener.onMarkerVisibilityChange(marker, visible);
         }
