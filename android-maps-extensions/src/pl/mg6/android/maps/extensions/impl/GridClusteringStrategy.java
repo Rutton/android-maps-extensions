@@ -20,11 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pl.mg6.android.maps.extensions.ClusterOptions;
+import pl.mg6.android.maps.extensions.ClusterOptionsProvider;
 import pl.mg6.android.maps.extensions.ClusteringSettings;
 import pl.mg6.android.maps.extensions.ClusteringSettings.IconDataProvider;
 import pl.mg6.android.maps.extensions.Marker;
 import pl.mg6.android.maps.extensions.utils.SphericalMercator;
-import android.support.v4.util.LongSparseArray;
 
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -54,9 +55,11 @@ class GridClusteringStrategy implements ClusteringStrategy {
 	private Map<ClusterKey, ClusterMarker> clusters = new HashMap<ClusterKey, ClusterMarker>();
 
 	private ClusterRefresher refresher;
+	private ClusterOptionsProvider clusterOptionsProvider;
 	private IconDataProvider iconDataProvider;
 
 	public GridClusteringStrategy(ClusteringSettings settings, IGoogleMap map, List<DelegatingMarker> markers, ClusterRefresher refresher) {
+		this.clusterOptionsProvider = settings.getClusterOptionsProvider();
 		this.iconDataProvider = settings.getIconDataProvider();
 		this.addMarkersDynamically = settings.isAddMarkersDynamically();
 		this.baseClusterSize = settings.getClusterSize();
@@ -415,9 +418,16 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		return baseClusterSize / (1 << zoom);
 	}
 
-	com.google.android.gms.maps.model.Marker createMarker(int markersCount, LatLng position) {
-		MarkerOptions mo = iconDataProvider.getIconData(markersCount);
-		return map.addMarker(markerOptions.position(position).icon(mo.getIcon()).anchor(mo.getAnchorU(), mo.getAnchorV()));
+	com.google.android.gms.maps.model.Marker createMarker(List<Marker> markers, LatLng position) {
+		if (clusterOptionsProvider != null) {
+			ClusterOptions opts = clusterOptionsProvider.getClusterOptions(markers);
+			return map.addMarker(markerOptions.position(position).icon(opts.getIcon()).anchor(opts.getAnchorU(), opts.getAnchorV()));
+		}
+		if (iconDataProvider != null) {
+			MarkerOptions opts = iconDataProvider.getIconData(markers.size());
+			return map.addMarker(markerOptions.position(position).icon(opts.getIcon()).anchor(opts.getAnchorU(), opts.getAnchorV()));
+		}
+		throw new RuntimeException();
 	}
 
 	private static class ClusterKey {
@@ -433,15 +443,24 @@ class GridClusteringStrategy implements ClusteringStrategy {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 
 			ClusterKey that = (ClusterKey) o;
 
-			if (group != that.group) return false;
-			if (latitudeId != that.latitudeId) return false;
-			if (longitudeId != that.longitudeId) return false;
-
+			if (group != that.group) {
+				return false;
+			}
+			if (latitudeId != that.latitudeId) {
+				return false;
+			}
+			if (longitudeId != that.longitudeId) {
+				return false;
+			}
 			return true;
 		}
 

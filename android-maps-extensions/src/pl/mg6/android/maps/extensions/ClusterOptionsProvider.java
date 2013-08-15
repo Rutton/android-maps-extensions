@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pl.mg6.android.maps.extensions.utils;
+package pl.mg6.android.maps.extensions;
 
-import android.location.Location;
+import java.util.List;
 
-import com.google.android.gms.maps.model.LatLng;
+public interface ClusterOptionsProvider {
 
-public final class LatLngUtils {
-
-	private LatLngUtils() {
-	}
-
-	public static LatLng fromLocation(Location location) {
-		return new LatLng(location.getLatitude(), location.getLongitude());
-	}
+	ClusterOptions getClusterOptions(List<Marker> markers);
 }

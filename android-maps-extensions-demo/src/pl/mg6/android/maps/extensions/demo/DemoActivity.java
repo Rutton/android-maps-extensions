@@ -96,7 +96,7 @@ public class DemoActivity extends FragmentActivity {
 			}
 		});
 
-		map.setClustering(new ClusteringSettings().iconDataProvider(new DemoIconProvider(getResources())).addMarkersDynamically(true));
+		map.setClustering(new ClusteringSettings().clusterOptionsProvider(new DemoClusterOptionsProvider(getResources())).addMarkersDynamically(true));
 
 		map.setInfoWindowAdapter(new InfoWindowAdapter() {
 
@@ -258,7 +258,7 @@ public class DemoActivity extends FragmentActivity {
 		clusteringSettings.addMarkersDynamically(true);
 
 		if (enabled) {
-			clusteringSettings.iconDataProvider(new DemoIconProvider(getResources()));
+			clusteringSettings.clusterOptionsProvider(new DemoClusterOptionsProvider(getResources()));
 
 			double clusterSize = CLUSTER_SIZES[clusterSizeIndex];
 			clusteringSettings.clusterSize(clusterSize);
