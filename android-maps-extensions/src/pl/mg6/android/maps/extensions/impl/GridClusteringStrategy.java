@@ -306,15 +306,18 @@ class GridClusteringStrategy implements ClusteringStrategy {
 				continue;
 			}
 			ClusterKey[] clusterIds = new ClusterKey[ms.size()];
+            DelegatingMarker leadingMarker = cluster.getLeadingMarker();
+            ClusterKey leadingClusterId = calculateClusterKey(leadingMarker.getClusterGroup(), leadingMarker.getPosition());
+
 			boolean allSame = true;
 			for (int j = 0; j < ms.size(); j++) {
 				clusterIds[j] = calculateClusterKey(ms.get(j).getClusterGroup(), ms.get(j).getPosition());
-				if (!clusterIds[j].equals(clusterIds[0])) {
+				if (!clusterIds[j].equals(leadingClusterId)) {
 					allSame = false;
 				}
 			}
 			if (allSame) {
-				newClusters.put(clusterIds[0], cluster);
+				newClusters.put(leadingClusterId, cluster);
 			} else {
 				cluster.removeVirtual();
 				for (int j = 0; j < ms.size(); j++) {
@@ -346,7 +349,9 @@ class GridClusteringStrategy implements ClusteringStrategy {
 				cluster.removeVirtual();
 				continue;
 			}
-			ClusterKey clusterId = calculateClusterKey(ms.get(0).getClusterGroup(), ms.get(0).getPosition());
+
+            DelegatingMarker leaderMarker = cluster.getLeadingMarker();
+			ClusterKey clusterId = calculateClusterKey(leaderMarker.getClusterGroup(), leaderMarker.getPosition());
 			List<ClusterMarker> clusterList = oldClusters.get(clusterId);
 			if (clusterList == null) {
 				clusterList = new ArrayList<ClusterMarker>();
@@ -362,16 +367,31 @@ class GridClusteringStrategy implements ClusteringStrategy {
 			} else {
 				ClusterMarker cluster = new ClusterMarker(this);
 				newClusters.put(key, cluster);
-				if (!addMarkersDynamically || isPositionInVisibleClusters(clusterList.get(0).getMarkersInternal().get(0).getPosition())) {
+				if (!addMarkersDynamically || isPositionInVisibleClusters(clusterList.get(0).getLeadingMarker().getPosition())) {
 					refresh(cluster);
 				}
-				for (ClusterMarker old : clusterList) {
+
+                int clusterMaxSizeSoFar = 0;
+                boolean hasMoreMarkers = false;
+                for (ClusterMarker old : clusterList) {
+                    List<Marker> markersInCluster = old.getMarkers();
+                    int newLeadingPosition = 0;
+                    if ( markersInCluster.size() > clusterMaxSizeSoFar) {
+                        clusterMaxSizeSoFar = markersInCluster.size();
+                        newLeadingPosition = cluster.size() + old.getLeadingPosition();
+                        hasMoreMarkers = true;
+                    }
 					old.removeVirtual();
 					List<DelegatingMarker> ms = old.getMarkersInternal();
 					for (DelegatingMarker m : ms) {
 						cluster.add(m);
 						markers.put(m, cluster);
 					}
+
+                    if (hasMoreMarkers) {
+                        cluster.setLeadingPosition(newLeadingPosition);
+                        hasMoreMarkers = false;
+                    }
 				}
 			}
 		}

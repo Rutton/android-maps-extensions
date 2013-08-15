@@ -53,6 +53,10 @@ class ClusterMarker implements Marker {
 		markers.remove(marker);
 	}
 
+    int size() {
+        return markers.size();
+    }
+
 	void refresh() {
 		int count = markers.size();
 		if (count == 0) {
@@ -281,6 +285,10 @@ class ClusterMarker implements Marker {
 
     void setLeadingPosition(int index) {
         this.leadingIndex = index;
+    }
+
+    int getLeadingPosition() {
+        return leadingIndex;
     }
 
 	void setVirtualPosition(LatLng position) {
