@@ -277,7 +277,7 @@ class ClusterMarker implements Marker {
 
     DelegatingMarker getLeadingMarker() {
         if (leadingIndex < 0 || leadingIndex > markers.size() - 1) {
-            return null;
+            leadingIndex = 0;
         }
 
         return markers.get(leadingIndex);
