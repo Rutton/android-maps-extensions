@@ -28,25 +28,23 @@ class DelegatingMarker implements Marker {
 
 	private LazyMarker real;
 	private MarkerManager manager;
-
 	private int clusterGroup;
 	private Object data;
-
 	private LatLng position;
 	private boolean visible;
 
-    DelegatingMarker(LazyMarker real, MarkerManager manager) {
-        this(real, manager, null);
-    }
+	DelegatingMarker(LazyMarker real, MarkerManager manager) {
+		this(real, manager, null);
+	}
 
 	DelegatingMarker(LazyMarker real, MarkerManager manager, Object data) {
 		this.real = real;
 		this.manager = manager;
-        this.data = data;
+		this.data = data;
 
 		this.position = real.getPosition();
 		this.visible = real.isVisible();
-        manager.onVisibilityChange(this, this.visible);
+		manager.onVisibilityChange(this, this.visible);
 	}
 
 	@Override
@@ -68,8 +66,21 @@ class DelegatingMarker implements Marker {
 	}
 
 	@Override
+	public void setClusterGroup(int clusterGroup) {
+		if (this.clusterGroup != clusterGroup) {
+			this.clusterGroup = clusterGroup;
+			manager.onClusterGroupChange(this);
+		}
+	}
+
+	@Override
 	public Object getData() {
 		return data;
+	}
+
+	@Override
+	public void setData(Object data) {
+		this.data = data;
 	}
 
 	@Deprecated
@@ -92,13 +103,30 @@ class DelegatingMarker implements Marker {
 	}
 
 	@Override
+	public void setPosition(LatLng position) {
+		this.position = position;
+		real.setPosition(position);
+		manager.onPositionChange(this);
+	}
+
+	@Override
 	public String getSnippet() {
 		return real.getSnippet();
 	}
 
 	@Override
+	public void setSnippet(String snippet) {
+		real.setSnippet(snippet);
+	}
+
+	@Override
 	public String getTitle() {
 		return real.getTitle();
+	}
+
+	@Override
+	public void setTitle(String title) {
+		real.setTitle(title);
 	}
 
 	@Override
@@ -117,6 +145,11 @@ class DelegatingMarker implements Marker {
 	}
 
 	@Override
+	public void setDraggable(boolean draggable) {
+		real.setDraggable(draggable);
+	}
+
+	@Override
 	public boolean isInfoWindowShown() {
 		return real.isInfoWindowShown();
 	}
@@ -124,6 +157,14 @@ class DelegatingMarker implements Marker {
 	@Override
 	public boolean isVisible() {
 		return visible;
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		if (this.visible != visible) {
+			this.visible = visible;
+			manager.onVisibilityChangeRequest(this, visible);
+		}
 	}
 
 	@Override
@@ -138,51 +179,8 @@ class DelegatingMarker implements Marker {
 	}
 
 	@Override
-	public void setClusterGroup(int clusterGroup) {
-		if (this.clusterGroup != clusterGroup) {
-			this.clusterGroup = clusterGroup;
-			manager.onClusterGroupChange(this);
-		}
-	}
-
-	@Override
-	public void setData(Object data) {
-		this.data = data;
-	}
-
-	@Override
-	public void setDraggable(boolean draggable) {
-		real.setDraggable(draggable);
-	}
-
-	@Override
 	public void setIcon(BitmapDescriptor icon) {
 		real.setIcon(icon);
-	}
-
-	@Override
-	public void setPosition(LatLng position) {
-		this.position = position;
-		real.setPosition(position);
-		manager.onPositionChange(this);
-	}
-
-	@Override
-	public void setSnippet(String snippet) {
-		real.setSnippet(snippet);
-	}
-
-	@Override
-	public void setTitle(String title) {
-		real.setTitle(title);
-	}
-
-	@Override
-	public void setVisible(boolean visible) {
-		if (this.visible != visible) {
-			this.visible = visible;
-			manager.onVisibilityChangeRequest(this, visible);
-		}
 	}
 
 	@Override
@@ -217,11 +215,11 @@ class DelegatingMarker implements Marker {
 	}
 
 	void changeVisible(boolean visible) {
-        boolean newVisible = this.visible && visible;
-        if (this.visible != newVisible) {
-            real.setVisible(newVisible);
-            manager.onVisibilityChange(this, newVisible);
-        }
+		boolean newVisible = this.visible && visible;
+		if (newVisible != real.isVisible()) {
+			real.setVisible(newVisible);
+			manager.onVisibilityChange(this, newVisible);
+		}
 	}
 
 	void clearCachedPosition() {
