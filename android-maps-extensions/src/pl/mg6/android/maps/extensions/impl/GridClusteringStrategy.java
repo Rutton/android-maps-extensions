@@ -337,15 +337,15 @@ class GridClusteringStrategy implements ClusteringStrategy {
 					cluster = newClusters.get(clusterIds[j]);
 					if (cluster == null) {
 						cluster = new ClusterMarker(this);
-                        if (useLeaderPosition) {
-                            cluster.setLeadingPosition(0);
-                        }
 						newClusters.put(clusterIds[j], cluster);
 						if (!addMarkersDynamically || isPositionInVisibleClusters(ms.get(j).getPosition())) {
 							refresh(cluster);
 						}
 					}
 					cluster.add(ms.get(j));
+                    if (useLeaderPosition && cluster.size() == 1) {
+                        cluster.setLeadingPosition(0);
+                    }
 					markers.put(ms.get(j), cluster);
 				}
 			}

@@ -151,8 +151,9 @@ public class ClusteringSettings {
 		MarkerOptions getIconData(int markersCount);
 	}
 
-    public void setClusteringChangeListener(ClusteringChangeListener listener) {
+    public ClusteringSettings setClusteringChangeListener(ClusteringChangeListener listener) {
         this.listener = listener;
+        return this;
     }
 
     public ClusteringChangeListener getClusteringListener() {
