@@ -343,8 +343,12 @@ class GridClusteringStrategy implements ClusteringStrategy {
 						}
 					}
 					cluster.add(ms.get(j));
-                    if (useLeaderPosition && cluster.size() == 1) {
-                        cluster.setLeadingPosition(0);
+                    if (useLeaderPosition) {
+                        if (ms.get(j) == leadingMarker) {
+                            cluster.setLeadingMarker(ms.get(j));
+                        } else if (cluster.size() == 1) {
+                            cluster.setLeadingPosition(0);
+                        }
                     }
 					markers.put(ms.get(j), cluster);
 				}
