@@ -35,7 +35,7 @@ class ClusterMarker implements Marker {
 
 	private List<DelegatingMarker> markers = new ArrayList<DelegatingMarker>();
 
-    private int leadingIndex;
+    private DelegatingMarker leadingMarker;
 
     public ClusterMarker(GridClusteringStrategy strategy) {
 		this.strategy = strategy;
@@ -275,20 +275,16 @@ class ClusterMarker implements Marker {
 		}
 	}
 
-    DelegatingMarker getLeadingMarker() {
-        if (leadingIndex < 0 || leadingIndex > markers.size() - 1) {
-            leadingIndex = 0;
-        }
-
-        return markers.get(leadingIndex);
+    public void setLeadingMarker(DelegatingMarker leadingMarker) {
+        this.leadingMarker = leadingMarker;
     }
 
-    void setLeadingPosition(int index) {
-        this.leadingIndex = index;
+    public DelegatingMarker getLeadingMarker() {
+        return leadingMarker;
     }
 
-    int getLeadingPosition() {
-        return leadingIndex;
+    public void setLeadingPosition(int index) {
+        this.leadingMarker = markers.get(index);
     }
 
 	void setVirtualPosition(LatLng position) {

@@ -33,6 +33,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
 
+import android.util.Log;
+
 class GridClusteringStrategy implements ClusteringStrategy {
 
 	private static final boolean DEBUG_GRID = false;
@@ -113,18 +115,31 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		}
 	}
 
-	@Override
-	public void onClusterGroupChange(DelegatingMarker marker) {
-		if (!marker.isVisible()) {
-			return;
-		}
-		ClusterMarker oldCluster = markers.get(marker);
-		if (oldCluster != null) {
-			oldCluster.remove(marker);
-			refresh(oldCluster);
-		}
-		addMarker(marker);
-	}
+    @Override
+    public void onClusterGroupChange(DelegatingMarker marker) {
+        updateWithMarker(marker);
+    }
+
+    private void updateWithMarker(DelegatingMarker marker) {
+        if (!marker.isVisible()) {
+            return;
+        }
+        ClusterMarker oldCluster = markers.get(marker);
+        boolean isLeader = false;
+        if (oldCluster != null) {
+            isLeader = marker == oldCluster.getLeadingMarker();
+            oldCluster.remove(marker);
+            refresh(oldCluster);
+        }
+        int newIndex = addMarker(marker);
+
+        if (useLeaderPosition) {
+            ClusterMarker newCluster = markers.get(marker);
+            if (oldCluster == newCluster && isLeader) {
+                newCluster.setLeadingPosition(newIndex);
+            }
+        }
+    }
 
 	@Override
 	public void onAdd(DelegatingMarker marker) {
@@ -134,7 +149,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		addMarker(marker);
 	}
 
-	private void addMarker(DelegatingMarker marker) {
+	private int addMarker(DelegatingMarker marker) {
 		LatLng position = marker.getPosition();
 		ClusterKey key = calculateClusterKey(marker.getClusterGroup(), position);
 		ClusterMarker cluster = findClusterById(key);
@@ -143,6 +158,8 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		if (!addMarkersDynamically || isPositionInVisibleClusters(position)) {
 			refresh(cluster);
 		}
+
+        return cluster.size() - 1;
 	}
 
 	private boolean isPositionInVisibleClusters(LatLng position) {
@@ -170,15 +187,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 
 	@Override
 	public void onPositionChange(DelegatingMarker marker) {
-		if (!marker.isVisible()) {
-			return;
-		}
-		ClusterMarker oldCluster = markers.get(marker);
-		if (oldCluster != null) {
-			oldCluster.remove(marker);
-			refresh(oldCluster);
-		}
-		addMarker(marker);
+        updateWithMarker(marker);
 	}
 
 	@Override
@@ -375,10 +384,10 @@ class GridClusteringStrategy implements ClusteringStrategy {
                 boolean hasMoreMarkers = false;
                 for (ClusterMarker old : clusterList) {
                     List<Marker> markersInCluster = old.getMarkers();
-                    int newLeadingPosition = 0;
+                    DelegatingMarker newLeadingMarker = null;
                     if ( markersInCluster.size() > clusterMaxSizeSoFar) {
                         clusterMaxSizeSoFar = markersInCluster.size();
-                        newLeadingPosition = cluster.size() + old.getLeadingPosition();
+                        newLeadingMarker = old.getLeadingMarker();
                         hasMoreMarkers = true;
                     }
 					old.removeVirtual();
@@ -389,7 +398,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 					}
 
                     if (hasMoreMarkers) {
-                        cluster.setLeadingPosition(newLeadingPosition);
+                        cluster.setLeadingMarker(newLeadingMarker);
                         hasMoreMarkers = false;
                     }
 				}
