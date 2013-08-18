@@ -179,9 +179,13 @@ class GridClusteringStrategy implements ClusteringStrategy {
 
 	private void removeMarker(DelegatingMarker marker) {
 		ClusterMarker cluster = markers.remove(marker);
+        boolean isLeadingMarker = marker == cluster.getLeadingMarker();
 		if (cluster != null) {
 			cluster.remove(marker);
 			refresh(cluster);
+            if (isLeadingMarker) {
+                cluster.setLeadingPosition(0);
+            }
 		}
 	}
 
