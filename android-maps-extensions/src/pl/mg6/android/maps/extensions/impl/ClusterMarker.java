@@ -280,6 +280,9 @@ class ClusterMarker implements Marker {
     }
 
     public DelegatingMarker getLeadingMarker() {
+        if (leadingMarker == null) {
+            return markers.get(0);
+        }
         return leadingMarker;
     }
 

@@ -385,7 +385,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
                 for (ClusterMarker old : clusterList) {
                     List<Marker> markersInCluster = old.getMarkers();
                     DelegatingMarker newLeadingMarker = null;
-                    if ( markersInCluster.size() > clusterMaxSizeSoFar) {
+                    if ( useLeaderPosition && markersInCluster.size() > clusterMaxSizeSoFar) {
                         clusterMaxSizeSoFar = markersInCluster.size();
                         newLeadingMarker = old.getLeadingMarker();
                         hasMoreMarkers = true;
@@ -397,7 +397,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 						markers.put(m, cluster);
 					}
 
-                    if (hasMoreMarkers) {
+                    if (useLeaderPosition && hasMoreMarkers) {
                         cluster.setLeadingMarker(newLeadingMarker);
                         hasMoreMarkers = false;
                     }
