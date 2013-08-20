@@ -215,8 +215,8 @@ class DelegatingMarker implements Marker {
 
 	void changeVisible(boolean visible) {
 		boolean newVisible = this.visible && visible;
-		if (newVisible != real.isVisible()) {
-			real.setVisible(newVisible);
+        if (newVisible != real.isVisible() || real.getMarker() == null) {
+            real.setVisible(newVisible);
 			manager.onVisibilityChange(this, newVisible);
 		}
 	}
