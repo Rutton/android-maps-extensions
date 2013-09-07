@@ -69,16 +69,10 @@ class GridClusteringStrategy implements ClusteringStrategy {
         this.clusteringListener = settings.getClusteringListener();
 		this.map = map;
 		this.markers = new HashMap<DelegatingMarker, ClusterMarker>();
-		for (DelegatingMarker m : markers) {
-			if (m.isVisible()) {
-				this.markers.put(m, null);
-			}
-		}
 		this.refresher = refresher;
-		this.oldZoom = -1;
 		this.zoom = Math.round(map.getCameraPosition().zoom);
 		this.clusterSize = calculateClusterSize(zoom);
-		recalculate();
+		addVisibleMarkers(markers);
 	}
 
 	@Override
@@ -150,16 +144,22 @@ class GridClusteringStrategy implements ClusteringStrategy {
 	}
 
 	private int addMarker(DelegatingMarker marker) {
-		LatLng position = marker.getPosition();
-		ClusterKey key = calculateClusterKey(marker.getClusterGroup(), position);
-		ClusterMarker cluster = findClusterById(key);
-		cluster.add(marker);
-		markers.put(marker, cluster);
-		if (!addMarkersDynamically || isPositionInVisibleClusters(position)) {
-			refresh(cluster);
-		}
-
-        return cluster.size() - 1;
+		int clusterGroup = marker.getClusterGroup();
+		if (clusterGroup < 0) {
+			markers.put(marker, null);
+			marker.changeVisible(true);
+            return 0;
+		} else {
+			LatLng position = marker.getPosition();
+			ClusterKey key = calculateClusterKey(clusterGroup, position);
+			ClusterMarker cluster = findClusterById(key);
+			cluster.add(marker);
+			markers.put(marker, cluster);
+			if (!addMarkersDynamically || isPositionInVisibleClusters(position)) {
+				refresh(cluster);
+			}
+            return cluster.size() - 1;
+        }
 	}
 
 	private boolean isPositionInVisibleClusters(LatLng position) {
@@ -211,6 +211,11 @@ class GridClusteringStrategy implements ClusteringStrategy {
 			Marker displayedMarker = cluster.getDisplayedMarker();
 			if (displayedMarker != null) {
 				displayedMarkers.add(displayedMarker);
+			}
+		}
+		for (DelegatingMarker marker : markers.keySet()) {
+			if (markers.get(marker) == null) {
+				displayedMarkers.add(marker);
 			}
 		}
 		return displayedMarkers;
@@ -278,30 +283,40 @@ class GridClusteringStrategy implements ClusteringStrategy {
 			return;
 		}
 		ClusterMarker cluster = markers.get(marker);
-		if (cluster.getMarkersInternal().size() == 1) {
+		if (cluster == null) {
+			marker.forceShowInfoWindow();
+		} else if (cluster.getMarkersInternal().size() == 1) {
 			cluster.refresh();
 			marker.forceShowInfoWindow();
 		}
 	}
 
 	private void refresh(ClusterMarker cluster) {
-		refresher.refresh(cluster);
+		if (cluster != null) {
+			refresher.refresh(cluster);
+		}
+	}
+
+	private void addVisibleMarkers(List<DelegatingMarker> markers) {
+		if (addMarkersDynamically) {
+			calculateVisibleClusters();
+		}
+		for (DelegatingMarker marker : markers) {
+			if (marker.isVisible()) {
+				addMarker(marker);
+			}
+		}
+		refresher.refreshAll();
 	}
 
 	private void recalculate() {
 		if (addMarkersDynamically) {
 			calculateVisibleClusters();
 		}
-		if (oldZoom == -1) {
-			for (DelegatingMarker marker : markers.keySet()) {
-				addMarker(marker);
-			}
+		if (zoomedIn()) {
+			splitClusters();
 		} else {
-			if (zoomedIn()) {
-				splitClusters();
-			} else {
-				joinClusters();
-			}
+			joinClusters();
 		}
 		refresher.refreshAll();
 	}
@@ -330,7 +345,10 @@ class GridClusteringStrategy implements ClusteringStrategy {
 				}
 			}
 			if (allSame) {
-				newClusters.put(leadingClusterId, cluster);
+				newClusters.put(clusterIds[0], cluster);
+				if (addMarkersDynamically && isPositionInVisibleClusters(cluster.getLeadingMarker().getPosition())) {
+					refresh(cluster);
+				}
 			} else {
 				cluster.removeVirtual();
 				for (int j = 0; j < ms.size(); j++) {
@@ -381,6 +399,9 @@ class GridClusteringStrategy implements ClusteringStrategy {
 			if (clusterList.size() == 1) {
 				ClusterMarker cluster = clusterList.get(0);
 				newClusters.put(key, cluster);
+				if (addMarkersDynamically && isPositionInVisibleClusters(cluster.getMarkersInternal().get(0).getPosition())) {
+					refresh(cluster);
+				}
 			} else {
 				ClusterMarker cluster = new ClusterMarker(this);
 				newClusters.put(key, cluster);
@@ -472,7 +493,7 @@ class GridClusteringStrategy implements ClusteringStrategy {
 		private final int latitudeId;
 		private final int longitudeId;
 
-		private ClusterKey(int group, int latitudeId, int longitudeId) {
+		public ClusterKey(int group, int latitudeId, int longitudeId) {
 			this.group = group;
 			this.latitudeId = latitudeId;
 			this.longitudeId = longitudeId;

@@ -19,38 +19,52 @@ import pl.mg6.android.maps.extensions.ClusteringSettings;
 import pl.mg6.android.maps.extensions.GoogleMap;
 import pl.mg6.android.maps.extensions.MarkerOptions;
 import pl.mg6.android.maps.extensions.SupportMapFragment;
+
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.view.View;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 
-public class Issue15InfoWindowNotShowingExampleActivity extends FragmentActivity {
+public class Issue29MarkerNotShownWhenZoomingInOrOutFromOtherRegion extends FragmentActivity {
+
+	private static final LatLng OTHER_POSITION = new LatLng(52.399, 23.900);
+	private static final float OTHER_ZOOM = 10;
+	private static final LatLng POZNAN_POSITION = new LatLng(52.399, 16.900);
+	private static final float POZNAN_ZOOM = 9;
+
+	private GoogleMap mMap;
+
+	public void onClickIssue(View v) {
+		mMap.addMarker(new MarkerOptions().title("Poznań").position(POZNAN_POSITION));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(POZNAN_POSITION, POZNAN_ZOOM));
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.simple_map);
+		setContentView(R.layout.issue29_zoom_in_out);
+		initializeMap();
+		initializeClustering();
+		initializeCameraPosition();
+	}
 
+	private void initializeMap() {
 		FragmentManager fm = getSupportFragmentManager();
 		SupportMapFragment f = (SupportMapFragment) fm.findFragmentById(R.id.map);
-		final GoogleMap map = f.getExtendedMap();
+		mMap = f.getExtendedMap();
+	}
 
+	private void initializeClustering() {
 		ClusteringSettings settings = new ClusteringSettings();
 		settings.clusterOptionsProvider(new DemoClusterOptionsProvider(getResources()));
 		settings.addMarkersDynamically(true);
-		map.setClustering(settings);
+		mMap.setClustering(settings);
+	}
 
-		MarkerOptions options = new MarkerOptions().position(new LatLng(50, 0)).title("title");
-		map.addMarker(options);
-
-		new Handler().post(new Runnable() {
-
-			@Override
-			public void run() {
-				map.getDisplayedMarkers().get(0).showInfoWindow();
-			}
-		});
+	private void initializeCameraPosition() {
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(OTHER_POSITION, OTHER_ZOOM));
 	}
 }
